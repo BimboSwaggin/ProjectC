@@ -1,4 +1,4 @@
-import java.awt.Image;
+ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -129,6 +129,13 @@ public class Boss implements DisplayableSprite {
 				}
 			}
 		return centerX;
+	}
+
+
+	@Override
+	public boolean isHit() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 

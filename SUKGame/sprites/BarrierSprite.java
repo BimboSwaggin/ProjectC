@@ -93,4 +93,11 @@ public class BarrierSprite implements DisplayableSprite {
 			
 	}
 
+
+	@Override
+	public boolean isHit() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

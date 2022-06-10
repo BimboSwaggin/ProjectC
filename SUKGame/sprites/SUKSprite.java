@@ -199,8 +199,8 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 		this.dispose = dispose;
 	}
 	
-	public void setDirection(){
-
+	public boolean isHit(){
+		return hit;
 	}
 	
 	public void setDirection(boolean movingRight, boolean movingLeft){
@@ -256,6 +256,8 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 		boolean onGround = onGround(universe.getSprites());
 		elapsedTime += actual_delta_time;
 		
+//-------------------------------------------------------------------------------//		
+		// JUMP
 		if (onGround) {
 			if (keyboard.keyDown(32)) {
 				
@@ -300,21 +302,27 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 					this.velocityX = 0;
 			}
 		}
-
+		
+//-------------------------------------------------------------------------------//
+		// CHECK FOR POTENTIAL MOVEMENT
+		double leftOrRight = 5 * Math.signum(this.velocityX);
 		double deltaX = actual_delta_time * 0.001 * velocityX;
 		double deltaY = actual_delta_time * 0.001 * velocityY;
 		
-		boolean collidingBarrierX = checkCollisionWithBarrier(universe.getSprites(), deltaX + 5, 0);
+		// CHECK FOR POTENTIAL COLLISIONS
+		boolean collidingBarrierX = checkCollisionWithBarrier(universe.getSprites(), deltaX + leftOrRight, 0);
 		boolean collidingBarrierY = checkCollisionWithBarrier(universe.getSprites(), 0, deltaY);
 		boolean collidingBoss = checkCollisionWithBoss(universe.getSprites(), deltaX, deltaY);
-
 		
-		
+//-------------------------------------------------------------------------------//
+		// IF COLLIDING
 		if (collidingBoss) {
 			this.velocityY = -500;
 			this.velocityX = 0;
+			this.isJumping = true;
 			this.hit = true;
 		}
+
 
 		if (collidingBarrierX == true) {
 			this.velocityX = 0;
@@ -324,17 +332,16 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 			this.velocityY = 0;
 		}
 		
-		
-		
-
-
+//-------------------------------------------------------------------------------//		
+		// IF NOT TOUCHING GROUND
 		if (onGround == true) {
 			this.velocityY = 0;
 			this.isJumping = false;
 		} else {
 			this.velocityY = this.velocityY + ACCCELERATION_Y * 0.001 * actual_delta_time;
 		}
-
+		
+		// CALCULATE MOVEMENT
 		this.centerX += actual_delta_time * 0.001 * velocityX;
 		this.centerY += actual_delta_time * 0.001 * velocityY;
 		this.hit = false;
