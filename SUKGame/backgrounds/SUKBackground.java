@@ -14,11 +14,11 @@ public class SUKBackground implements Background {
     private int backgroundHeight = 0;
     private int offsetX = 0;
     private double shiftX = 0;
-    private double shiftY = -650;
+    private double shiftY = 0;
 	
     public SUKBackground() {
     	try {
-    		this.image = ImageIO.read(new File("res/SUK/temp.jpg"));
+    		this.image = ImageIO.read(new File("res/bg.png"));
     		backgroundWidth = image.getWidth(null);
     		backgroundHeight = image.getHeight(null);
     		offsetX = backgroundWidth / 2  ;  		

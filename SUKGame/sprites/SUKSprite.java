@@ -11,16 +11,14 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 	
 	private static final int PERIOD_LENGTH = 200;			
 	private static final int IMAGES_IN_CYCLE = 5;
-	//required for advanced collision detection
-	private CollisionDetection collisionDetection;
 
-	
+	private long previousTime = 0; 
 	private long elapsedTime = 0; 
 	private static Image[] images;	
 	private double centerX = 0;
 	private double centerY = 0;
-	private double width = 100;
-	private double height = 100;
+	private double width = 96;
+	private double height = 96;
 	private boolean dispose = false;	
 	
 	//PIXELS PER SECOND PER SECOND
@@ -62,10 +60,6 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 
 		this.centerX = centerX;
 		this.centerY = centerY;
-		
-		collisionDetection = new CollisionDetection();
-		collisionDetection.setBounceFactorY(0);
-		collisionDetection.setBounceFactorX(0);
 		
 		if (images == null) {
 			try {
@@ -199,8 +193,9 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 		this.dispose = dispose;
 	}
 	
-	public boolean isHit(){
-		return hit;
+	public boolean isHit(boolean hit){
+		this.hit = hit;
+		return this.hit;
 	}
 	
 	public void setDirection(boolean movingRight, boolean movingLeft){
@@ -258,7 +253,7 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 		
 //-------------------------------------------------------------------------------//		
 		// JUMP
-		if (onGround) {
+		if (onGround && !hit) {
 			if (keyboard.keyDown(32)) {
 				
 				this.isJumping = true;
@@ -267,47 +262,50 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 			}
 		}
 		
-
-		// RIGHT
-		if (keyboard.keyDown(39) && !hit) {
-				//velocityX will increase by a constant amount, up to a maximum
-				velocityX += actual_delta_time * 0.001 * ACCCELERATION_X;
-				setDirection(true,false);
-				facingDirection = -1;
-				if (velocityX > MAX_VELOCITY_X) {
-					velocityX = MAX_VELOCITY_X;
+		if (hit == false) {
+			// RIGHT
+			if (keyboard.keyDown(39)) {
+					//velocityX will increase by a constant amount, up to a maximum
+					velocityX += actual_delta_time * 0.001 * ACCCELERATION_X;
+					setDirection(true,false);
+					facingDirection = -1;
+					if (velocityX > MAX_VELOCITY_X) {
+						velocityX = MAX_VELOCITY_X;
+					}
 				}
-			}
-		
-		// LEFT
-		else if (keyboard.keyDown(37) && !hit) {
-				//velocityX will decrease by a constant amount, down to a minimum
-				facingDirection = 1;
-				setDirection(false,true);
-				velocityX -= actual_delta_time * 0.001 * ACCCELERATION_X;
-				if (velocityX < - MAX_VELOCITY_X) {
-					velocityX = - MAX_VELOCITY_X;
+			
+			// LEFT
+			else if (keyboard.keyDown(37)) {
+					//velocityX will decrease by a constant amount, down to a minimum
+					facingDirection = 1;
+					setDirection(false,true);
+					velocityX -= actual_delta_time * 0.001 * ACCCELERATION_X;
+					if (velocityX < - MAX_VELOCITY_X) {
+						velocityX = - MAX_VELOCITY_X;
+					}
 				}
-			}
-		// STOPPING
-		else {
-				//if not moving left or right, then velocity will deaccelerate
-				//note the use of a practical limit to zero the movement; otherwise, velocity would never be exactly zero
-				if (Math.abs(this.velocityX) > MINIMUM_X_VELOCITY) {
-					setDirection(false,false);
-					this.velocityX /= actual_delta_time * 0.001 *  DEACCELERATION_X * Math.signum(this.velocityX);
+			// STOPPING
+			else {
+					//if not moving left or right, then velocity will deaccelerate
+					//note the use of a practical limit to zero the movement; otherwise, velocity would never be exactly zero
+					if (Math.abs(this.velocityX) > MINIMUM_X_VELOCITY) {
+						setDirection(false,false);
+						this.velocityX /= actual_delta_time * 0.001 *  500 * Math.signum(this.velocityX);
+					}
+					else {
+						setDirection(false,false);
+						this.velocityX = 0;
 				}
-				else {
-					setDirection(false,false);
-					this.velocityX = 0;
 			}
 		}
+		
 		
 //-------------------------------------------------------------------------------//
 		// CHECK FOR POTENTIAL MOVEMENT
 		double leftOrRight = 5 * Math.signum(this.velocityX);
 		double deltaX = actual_delta_time * 0.001 * velocityX;
 		double deltaY = actual_delta_time * 0.001 * velocityY;
+
 		
 		// CHECK FOR POTENTIAL COLLISIONS
 		boolean collidingBarrierX = checkCollisionWithBarrier(universe.getSprites(), deltaX + leftOrRight, 0);
@@ -316,14 +314,20 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 		
 //-------------------------------------------------------------------------------//
 		// IF COLLIDING
+
 		if (collidingBoss) {
 			this.velocityY = -500;
-			this.velocityX = 0;
+//			this.velocityX = 0;
 			this.isJumping = true;
-			this.hit = true;
 		}
-
-
+		
+		if(hit) {
+			if ((elapsedTime - previousTime)/ 1000 > 4) {
+				velocityX = 500;
+				this.velocityX *= -10;
+				universe.getBoss().setDontMove(true);
+			}
+		}
 		if (collidingBarrierX == true) {
 			this.velocityX = 0;
 			}
@@ -346,6 +350,11 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 		this.centerY += actual_delta_time * 0.001 * velocityY;
 		this.hit = false;
 
+	}
+
+private void hit() {
+	
+		
 	}
 
 //**************************************************************************************************************************************************************************************************//
@@ -400,6 +409,9 @@ public class SUKSprite implements DisplayableSprite, MovableSprite {
 			}
 		}
 		return ground;
+	}
+
+	public void setDontMove(boolean DontMove) {
 	}
 	
 
